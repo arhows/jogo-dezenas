@@ -50,10 +50,27 @@
           <span class="eyebrow">Agora em equipe</span>
           <h2>Os times das dezenas</h2>
         </div>
-        <p>Clique nos amigos para tirar ou colocar unidades no time.</p>
+        <p>Escolha um personagem e coloque-o em uma posição numerada do time.</p>
+      </div>
+
+      
+      <div class="player-bench">
+        <div class="bench-title">
+          <div>
+            <strong>Banco dos personagens</strong>
+            <span>Arraste um personagem ou toque nele e depois toque em uma casa.</span>
+          </div>
+          <button type="button" id="clearPlayerSelection" class="bench-clear-btn">Cancelar seleção</button>
+        </div>
+        <div id="playerBench" class="player-bench-grid"></div>
+      </div>
+
+      <div id="selectedPlayerInfo" class="selected-player-info" aria-live="polite">
+        Nenhum personagem selecionado.
       </div>
 
       <div id="tensGrid" class="tens-grid"></div>
+
     </section>
 
     <section class="builder-section">

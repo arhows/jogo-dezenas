@@ -28,3 +28,12 @@ Abra o arquivo `index.html` em qualquer navegador moderno.
 - Clique no lugar vazio para adicionar a unidade novamente.
 - O resumo recalcula automaticamente dezenas completas e unidades restantes.
 - Botões permitem completar ou esvaziar cada time.
+
+## Modo futebol
+- Cada dezena possui 10 posições numeradas de 1 a 10.
+- O personagem recebe uma camisa com o número da posição ocupada.
+- Exemplo: Leão na casa 5 = Leão com camisa 5.
+- Desktop: arraste personagens do banco para as casas.
+- Tablet/celular: toque no personagem e depois toque na casa.
+- Jogadores que já estão no time também podem ser arrastados para outra posição.
+- Tocar em um jogador sem outro selecionado remove-o e deixa a casa vazia.

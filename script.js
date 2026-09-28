@@ -42,23 +42,79 @@ units.forEach(unit => {
 
 
 /* =========================================================
-   TIMES DAS DEZENAS INTERATIVOS
-   Cada time possui exatamente a quantidade de unidades
-   indicada pelo número: 10, 20, 30 ... 90.
+   TIMES DAS DEZENAS - FUTEBOL
+   Cada dezena tem 10 casas numeradas de 1 a 10.
+   O jogador recebe a camisa da posição ocupada.
    ========================================================= */
+
+const playerBench = document.querySelector("#playerBench");
+const selectedPlayerInfo = document.querySelector("#selectedPlayerInfo");
+const clearPlayerSelection = document.querySelector("#clearPlayerSelection");
+
+let selectedPlayerIndex = null;
+let draggedPlayer = null;
 
 const teamStates = {};
 
+function createEmptyTeam(value) {
+  // Cada posição começa ocupada ciclicamente pelos personagens.
+  return Array.from({ length: value }, (_, i) => i % units.length);
+}
+
 function getTeamState(value) {
   if (!teamStates[value]) {
-    teamStates[value] = Array.from({ length: value }, () => true);
+    teamStates[value] = createEmptyTeam(value);
   }
   return teamStates[value];
 }
 
+function renderPlayerBench() {
+  playerBench.innerHTML = "";
+
+  units.forEach((unit, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `bench-player ${selectedPlayerIndex === index ? "selected" : ""}`;
+    button.draggable = true;
+    button.dataset.playerIndex = index;
+    button.innerHTML = `
+      <span class="bench-player-emoji">${unit.emoji}</span>
+      <span class="bench-player-name">${unit.name}</span>
+    `;
+
+    button.addEventListener("click", () => {
+      selectedPlayerIndex = index;
+      renderPlayerBench();
+      selectedPlayerInfo.textContent =
+        `${unit.emoji} ${unit.name} selecionado. Agora toque em uma casa numerada.`;
+    });
+
+    button.addEventListener("dragstart", event => {
+      draggedPlayer = { playerIndex: index, fromTeam: null, fromSlot: null };
+      event.dataTransfer.effectAllowed = "copy";
+      event.dataTransfer.setData("text/plain", String(index));
+    });
+
+    button.addEventListener("dragend", () => {
+      draggedPlayer = null;
+      document.querySelectorAll(".team-slot.drag-over")
+        .forEach(el => el.classList.remove("drag-over"));
+    });
+
+    playerBench.appendChild(button);
+  });
+}
+
+clearPlayerSelection.addEventListener("click", () => {
+  selectedPlayerIndex = null;
+  renderPlayerBench();
+  selectedPlayerInfo.textContent = "Nenhum personagem selecionado.";
+});
+
 function getTeamCounts(value) {
   const state = getTeamState(value);
-  const unitsCount = state.filter(Boolean).length;
+  const unitsCount = state.filter(player => player !== null).length;
+
   return {
     unitsCount,
     fullTens: Math.floor(unitsCount / 10),
@@ -77,6 +133,52 @@ function teamExplanation(unitsCount, fullTens, looseUnits) {
   return `${unitsCount} unidades = ${fullTens} ${dezenaWord} + ${looseUnits} ${unidadeWord}.`;
 }
 
+function shirtNumberForSlot(index) {
+  return (index % 10) + 1;
+}
+
+function slotMarkup(value, index, playerIndex, color) {
+  const shirtNumber = shirtNumberForSlot(index);
+  const isFilled = playerIndex !== null;
+
+  if (!isFilled) {
+    return `
+      <button
+        type="button"
+        class="team-slot empty"
+        data-team="${value}"
+        data-slot="${index}"
+        aria-label="Posição ${shirtNumber} vazia"
+        title="Posição ${shirtNumber}: coloque um jogador aqui"
+      >
+        <span class="position-number">${shirtNumber}</span>
+        <span class="slot-hint">vaga</span>
+      </button>
+    `;
+  }
+
+  const player = units[playerIndex];
+
+  return `
+    <button
+      type="button"
+      class="team-slot filled"
+      draggable="true"
+      data-team="${value}"
+      data-slot="${index}"
+      data-player-index="${playerIndex}"
+      aria-label="${player.name}, camisa ${shirtNumber}. Clique para remover ou arraste para outra posição."
+      title="${player.name} — camisa ${shirtNumber}"
+    >
+      <span class="position-number">${shirtNumber}</span>
+      <span class="player-with-shirt">
+        <span class="player-emoji">${player.emoji}</span>
+        <span class="team-shirt" style="background:${color}">${shirtNumber}</span>
+      </span>
+    </button>
+  `;
+}
+
 function renderTeamCard(value) {
   const d = value / 10;
   const state = getTeamState(value);
@@ -90,22 +192,7 @@ function renderTeamCard(value) {
   const groupsMarkup = Array.from({ length: d }, (_, groupIndex) => {
     const slots = Array.from({ length: 10 }, (_, slotInGroup) => {
       const index = groupIndex * 10 + slotInGroup;
-      const u = units[index % units.length];
-      const isFilled = state[index];
-
-      return `
-        <button
-          type="button"
-          class="team-slot ${isFilled ? "filled" : "empty"}"
-          data-team="${value}"
-          data-slot="${index}"
-          aria-label="${isFilled ? `Remover unidade ${index + 1}` : `Adicionar unidade ${index + 1}`}"
-          aria-pressed="${isFilled ? "true" : "false"}"
-          title="${isFilled ? "Clique para tirar este amigo" : "Clique para trazer o amigo de volta"}"
-        >
-          <span class="slot-character">${u.emoji}</span>
-        </button>
-      `;
+      return slotMarkup(value, index, state[index], color);
     }).join("");
 
     return `
@@ -123,7 +210,7 @@ function renderTeamCard(value) {
 
     <div class="team-body">
       <p class="team-instruction">
-        Cada quadro com 10 lugares forma uma dezena. Clique em um amigo para tirá-lo do time.
+        Cada dezena tem posições de 1 a 10. O número da casa vira o número da camisa.
       </p>
 
       <div class="team-groups">
@@ -132,7 +219,7 @@ function renderTeamCard(value) {
 
       <div class="team-summary">
         <div class="team-summary-main">
-          <strong>Quantos amigos ficaram?</strong>
+          <strong>Jogadores em campo</strong>
           <span class="team-summary-number">${unitsCount}</span>
         </div>
 
@@ -141,7 +228,7 @@ function renderTeamCard(value) {
         </div>
 
         <div class="team-progress" aria-hidden="true">
-          <span style="width:${(unitsCount / value) * 100}%; background:${color}"></span>
+          <span style="width:${value ? (unitsCount / value) * 100 : 0}%; background:${color}"></span>
         </div>
 
         <div class="team-actions">
@@ -164,6 +251,7 @@ function renderAllTeams() {
   for (let d = 1; d <= 9; d++) {
     tensGrid.appendChild(renderTeamCard(d * 10));
   }
+  bindDragEvents();
 }
 
 function updateTeamCard(value) {
@@ -172,6 +260,112 @@ function updateTeamCard(value) {
 
   const newCard = renderTeamCard(value);
   oldCard.replaceWith(newCard);
+  bindDragEvents(newCard);
+}
+
+function placePlayer(teamValue, slotIndex, playerIndex, origin = null) {
+  const targetState = getTeamState(teamValue);
+
+  // Se veio de outra casa, remove da origem primeiro.
+  if (origin && origin.fromTeam !== null && origin.fromSlot !== null) {
+    const originState = getTeamState(origin.fromTeam);
+
+    // Troca de posições quando o destino já está ocupado.
+    const displaced = targetState[slotIndex];
+
+    if (origin.fromTeam === teamValue) {
+      originState[origin.fromSlot] = displaced;
+    } else {
+      originState[origin.fromSlot] = null;
+    }
+
+    targetState[slotIndex] = playerIndex;
+
+    if (origin.fromTeam !== teamValue) {
+      updateTeamCard(origin.fromTeam);
+    }
+  } else {
+    targetState[slotIndex] = playerIndex;
+  }
+
+  updateTeamCard(teamValue);
+
+  const player = units[playerIndex];
+  const shirt = shirtNumberForSlot(slotIndex);
+
+  showToast(`${player.emoji} ${player.name} entrou na posição ${shirt} e recebeu a camisa ${shirt}!`);
+}
+
+function removePlayer(teamValue, slotIndex) {
+  const state = getTeamState(teamValue);
+  const playerIndex = state[slotIndex];
+
+  if (playerIndex === null) return;
+
+  const player = units[playerIndex];
+  state[slotIndex] = null;
+  updateTeamCard(teamValue);
+
+  showToast(`${player.emoji} ${player.name} saiu. A casa ${shirtNumberForSlot(slotIndex)} ficou vazia.`);
+}
+
+function bindDragEvents(root = tensGrid) {
+  root.querySelectorAll(".team-slot").forEach(slot => {
+    slot.addEventListener("dragstart", event => {
+      if (!slot.classList.contains("filled")) {
+        event.preventDefault();
+        return;
+      }
+
+      const teamValue = Number(slot.dataset.team);
+      const slotIndex = Number(slot.dataset.slot);
+      const playerIndex = Number(slot.dataset.playerIndex);
+
+      draggedPlayer = {
+        playerIndex,
+        fromTeam: teamValue,
+        fromSlot: slotIndex
+      };
+
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", String(playerIndex));
+    });
+
+    slot.addEventListener("dragover", event => {
+      event.preventDefault();
+      slot.classList.add("drag-over");
+      event.dataTransfer.dropEffect = draggedPlayer?.fromTeam ? "move" : "copy";
+    });
+
+    slot.addEventListener("dragleave", () => {
+      slot.classList.remove("drag-over");
+    });
+
+    slot.addEventListener("drop", event => {
+      event.preventDefault();
+      slot.classList.remove("drag-over");
+
+      if (!draggedPlayer) return;
+
+      const teamValue = Number(slot.dataset.team);
+      const slotIndex = Number(slot.dataset.slot);
+
+      placePlayer(
+        teamValue,
+        slotIndex,
+        draggedPlayer.playerIndex,
+        draggedPlayer.fromTeam !== null ? draggedPlayer : null
+      );
+
+      draggedPlayer = null;
+    });
+
+    slot.addEventListener("dragend", () => {
+      draggedPlayer = null;
+      document.querySelectorAll(".team-slot.drag-over")
+        .forEach(el => el.classList.remove("drag-over"));
+    });
+  });
 }
 
 tensGrid.addEventListener("click", event => {
@@ -182,23 +376,40 @@ tensGrid.addEventListener("click", event => {
     const index = Number(slot.dataset.slot);
     const state = getTeamState(value);
 
-    state[index] = !state[index];
-    updateTeamCard(value);
+    // Em celular/tablet: jogador selecionado vai para a casa tocada.
+    if (selectedPlayerIndex !== null) {
+      placePlayer(value, index, selectedPlayerIndex);
+      selectedPlayerIndex = null;
+      renderPlayerBench();
+      selectedPlayerInfo.textContent = "Nenhum personagem selecionado.";
+      return;
+    }
 
-    const { unitsCount, fullTens, looseUnits } = getTeamCounts(value);
-    showToast(teamExplanation(unitsCount, fullTens, looseUnits));
+    // Sem seleção, tocar num jogador remove-o.
+    if (state[index] !== null) {
+      removePlayer(value, index);
+    } else {
+      showToast(`A casa ${shirtNumberForSlot(index)} está vazia. Escolha um personagem no banco.`);
+    }
+
     return;
   }
 
   const actionButton = event.target.closest("[data-team-action]");
+
   if (actionButton) {
     const value = Number(actionButton.dataset.team);
     const action = actionButton.dataset.teamAction;
     const state = getTeamState(value);
 
-    const fillValue = action === "fill";
-    for (let i = 0; i < state.length; i++) {
-      state[i] = fillValue;
+    if (action === "fill") {
+      for (let i = 0; i < state.length; i++) {
+        state[i] = i % units.length;
+      }
+    } else {
+      for (let i = 0; i < state.length; i++) {
+        state[i] = null;
+      }
     }
 
     updateTeamCard(value);
@@ -208,6 +419,7 @@ tensGrid.addEventListener("click", event => {
   }
 });
 
+renderPlayerBench();
 renderAllTeams();
 
 

@@ -913,3 +913,234 @@ button {
     min-height: 42px;
   }
 }
+
+
+/* =========================================================
+   BANCO DE JOGADORES E CAMISAS NUMERADAS
+   ========================================================= */
+
+.player-bench {
+  margin: 0 0 18px;
+  padding: 18px;
+  border-radius: 22px;
+  background: white;
+  box-shadow: var(--shadow);
+}
+
+.bench-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.bench-title strong {
+  display: block;
+  font-size: 1.05rem;
+}
+
+.bench-title span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+.bench-clear-btn {
+  border: 1px solid #dfe2ea;
+  background: white;
+  color: var(--text);
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.player-bench-grid {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(64px, 1fr));
+  gap: 9px;
+}
+
+.bench-player {
+  min-width: 0;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  padding: 9px 5px;
+  background: #f6f7fb;
+  cursor: grab;
+  text-align: center;
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+  user-select: none;
+}
+
+.bench-player:hover {
+  transform: translateY(-2px);
+}
+
+.bench-player.selected {
+  border-color: var(--primary);
+  background: #ececff;
+}
+
+.bench-player:active {
+  cursor: grabbing;
+}
+
+.bench-player-emoji {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.bench-player-name {
+  display: block;
+  margin-top: 5px;
+  font-size: .75rem;
+  font-weight: 900;
+  color: var(--muted);
+}
+
+.selected-player-info {
+  margin: 0 0 18px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: #ececff;
+  color: #4545a8;
+  font-weight: 800;
+  font-size: .9rem;
+}
+
+.team-slot {
+  min-height: 58px;
+  overflow: hidden;
+}
+
+.position-number {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  z-index: 2;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(31,41,55,.08);
+  color: #555d6c;
+  font-size: .68rem;
+  font-weight: 950;
+}
+
+.team-slot.empty .position-number {
+  background: rgba(255,255,255,.78);
+}
+
+.player-with-shirt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+}
+
+.player-emoji {
+  position: relative;
+  z-index: 2;
+  font-size: 1.6rem;
+  transform: translateY(-4px);
+}
+
+.team-shirt {
+  position: absolute;
+  z-index: 1;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34px;
+  height: 25px;
+  border-radius: 7px 7px 9px 9px;
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: .7rem;
+  font-weight: 950;
+  box-shadow: 0 2px 5px rgba(0,0,0,.16);
+}
+
+.team-shirt::before,
+.team-shirt::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  width: 10px;
+  height: 15px;
+  border-radius: 5px;
+  background: inherit;
+}
+
+.team-shirt::before {
+  left: -6px;
+  transform: rotate(25deg);
+}
+
+.team-shirt::after {
+  right: -6px;
+  transform: rotate(-25deg);
+}
+
+.team-slot.drag-over {
+  outline: 3px dashed var(--primary);
+  outline-offset: 2px;
+  background: #eeeeff;
+}
+
+.team-slot.filled {
+  cursor: grab;
+}
+
+.team-slot.filled:active {
+  cursor: grabbing;
+}
+
+.slot-hint {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #a0a5b2;
+  font-size: .65rem;
+  font-weight: 900;
+  padding-top: 18px;
+}
+
+.team-slot.empty::after {
+  content: none;
+}
+
+@media (max-width: 700px) {
+  .player-bench-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .bench-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .team-slot {
+    min-height: 54px;
+  }
+
+  .player-emoji {
+    font-size: 1.45rem;
+  }
+
+  .team-shirt {
+    width: 31px;
+    height: 23px;
+  }
+}
