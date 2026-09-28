@@ -40,33 +40,176 @@ units.forEach(unit => {
   unitsGrid.appendChild(card);
 });
 
-for (let d = 1; d <= 9; d++) {
-  const value = d * 10;
-  const card = document.createElement("article");
-  card.className = "ten-card";
 
-  const members = Array.from({ length: 10 }, (_, i) => {
-    const u = units[i % units.length];
-    return `<div class="mini-member">${u.emoji}</div>`;
+/* =========================================================
+   TIMES DAS DEZENAS INTERATIVOS
+   Cada time possui exatamente a quantidade de unidades
+   indicada pelo número: 10, 20, 30 ... 90.
+   ========================================================= */
+
+const teamStates = {};
+
+function getTeamState(value) {
+  if (!teamStates[value]) {
+    teamStates[value] = Array.from({ length: value }, () => true);
+  }
+  return teamStates[value];
+}
+
+function getTeamCounts(value) {
+  const state = getTeamState(value);
+  const unitsCount = state.filter(Boolean).length;
+  return {
+    unitsCount,
+    fullTens: Math.floor(unitsCount / 10),
+    looseUnits: unitsCount % 10
+  };
+}
+
+function teamExplanation(unitsCount, fullTens, looseUnits) {
+  const dezenaWord = fullTens === 1 ? "dezena completa" : "dezenas completas";
+  const unidadeWord = looseUnits === 1 ? "unidade" : "unidades";
+
+  if (looseUnits === 0) {
+    return `${unitsCount} unidades = ${fullTens} ${dezenaWord}.`;
+  }
+
+  return `${unitsCount} unidades = ${fullTens} ${dezenaWord} + ${looseUnits} ${unidadeWord}.`;
+}
+
+function renderTeamCard(value) {
+  const d = value / 10;
+  const state = getTeamState(value);
+  const { unitsCount, fullTens, looseUnits } = getTeamCounts(value);
+  const color = teamColors[d - 1];
+
+  const card = document.createElement("article");
+  card.className = "ten-card interactive-team";
+  card.dataset.teamValue = value;
+
+  const groupsMarkup = Array.from({ length: d }, (_, groupIndex) => {
+    const slots = Array.from({ length: 10 }, (_, slotInGroup) => {
+      const index = groupIndex * 10 + slotInGroup;
+      const u = units[index % units.length];
+      const isFilled = state[index];
+
+      return `
+        <button
+          type="button"
+          class="team-slot ${isFilled ? "filled" : "empty"}"
+          data-team="${value}"
+          data-slot="${index}"
+          aria-label="${isFilled ? `Remover unidade ${index + 1}` : `Adicionar unidade ${index + 1}`}"
+          aria-pressed="${isFilled ? "true" : "false"}"
+          title="${isFilled ? "Clique para tirar este amigo" : "Clique para trazer o amigo de volta"}"
+        >
+          <span class="slot-character">${u.emoji}</span>
+        </button>
+      `;
+    }).join("");
+
+    return `
+      <div class="ten-group" data-group-label="${groupIndex + 1}ª dezena">
+        ${slots}
+      </div>
+    `;
   }).join("");
 
   card.innerHTML = `
-    <div class="ten-header" style="background:${teamColors[d - 1]}">
-      <span>Time ${d}</span>
+    <div class="ten-header" style="background:${color}">
+      <span>Time do ${value}</span>
       <strong>${value}</strong>
     </div>
-    <div class="team-members">${members}</div>
-    <div class="ten-caption">
-      ${value} = ${d} ${d === 1 ? "dezena" : "dezenas"} = ${value} unidades
+
+    <div class="team-body">
+      <p class="team-instruction">
+        Cada quadro com 10 lugares forma uma dezena. Clique em um amigo para tirá-lo do time.
+      </p>
+
+      <div class="team-groups">
+        ${groupsMarkup}
+      </div>
+
+      <div class="team-summary">
+        <div class="team-summary-main">
+          <strong>Quantos amigos ficaram?</strong>
+          <span class="team-summary-number">${unitsCount}</span>
+        </div>
+
+        <div class="team-summary-explain">
+          ${teamExplanation(unitsCount, fullTens, looseUnits)}
+        </div>
+
+        <div class="team-progress" aria-hidden="true">
+          <span style="width:${(unitsCount / value) * 100}%; background:${color}"></span>
+        </div>
+
+        <div class="team-actions">
+          <button type="button" class="team-action-btn" data-team-action="fill" data-team="${value}">
+            Completar time
+          </button>
+          <button type="button" class="team-action-btn" data-team-action="clear" data-team="${value}">
+            Esvaziar time
+          </button>
+        </div>
+      </div>
     </div>
   `;
 
-  card.addEventListener("click", () => {
-    showToast(`${value} tem ${d} ${d === 1 ? "dezena" : "dezenas"} completas.`);
-  });
-
-  tensGrid.appendChild(card);
+  return card;
 }
+
+function renderAllTeams() {
+  tensGrid.innerHTML = "";
+  for (let d = 1; d <= 9; d++) {
+    tensGrid.appendChild(renderTeamCard(d * 10));
+  }
+}
+
+function updateTeamCard(value) {
+  const oldCard = tensGrid.querySelector(`[data-team-value="${value}"]`);
+  if (!oldCard) return;
+
+  const newCard = renderTeamCard(value);
+  oldCard.replaceWith(newCard);
+}
+
+tensGrid.addEventListener("click", event => {
+  const slot = event.target.closest(".team-slot");
+
+  if (slot) {
+    const value = Number(slot.dataset.team);
+    const index = Number(slot.dataset.slot);
+    const state = getTeamState(value);
+
+    state[index] = !state[index];
+    updateTeamCard(value);
+
+    const { unitsCount, fullTens, looseUnits } = getTeamCounts(value);
+    showToast(teamExplanation(unitsCount, fullTens, looseUnits));
+    return;
+  }
+
+  const actionButton = event.target.closest("[data-team-action]");
+  if (actionButton) {
+    const value = Number(actionButton.dataset.team);
+    const action = actionButton.dataset.teamAction;
+    const state = getTeamState(value);
+
+    const fillValue = action === "fill";
+    for (let i = 0; i < state.length; i++) {
+      state[i] = fillValue;
+    }
+
+    updateTeamCard(value);
+
+    const { unitsCount, fullTens, looseUnits } = getTeamCounts(value);
+    showToast(teamExplanation(unitsCount, fullTens, looseUnits));
+  }
+});
+
+renderAllTeams();
+
 
 let tens = 2;
 let ones = 3;

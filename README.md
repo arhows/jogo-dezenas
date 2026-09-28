@@ -21,3 +21,10 @@ Abra o arquivo `index.html` em qualquer navegador moderno.
 - Ao acertar: som de comemoração, balão animado estourando e chuva de confetes.
 - Ao errar: efeito sonoro "nhé nhé nhé", fala opcional do navegador e carinha chorando.
 - Os sons são produzidos pelo próprio navegador, sem arquivos de áudio externos.
+
+## Times interativos
+- O Time 10 possui 10 posições, o Time 20 possui 20, até o Time 90 com 90 posições.
+- Clique em um personagem para remover uma unidade; o lugar fica vazio.
+- Clique no lugar vazio para adicionar a unidade novamente.
+- O resumo recalcula automaticamente dezenas completas e unidades restantes.
+- Botões permitem completar ou esvaziar cada time.
