@@ -37,3 +37,10 @@ Abra o arquivo `index.html` em qualquer navegador moderno.
 - Tablet/celular: toque no personagem e depois toque na casa.
 - Jogadores que já estão no time também podem ser arrastados para outra posição.
 - Tocar em um jogador sem outro selecionado remove-o e deixa a casa vazia.
+
+## Regra revisada dos times
+- O Time 10 já vale 10, o Time 20 já vale 20, e assim por diante.
+- Os jogadores representam somente unidades acrescentadas ao valor-base.
+- Exemplo: Time 20 com 1 jogador = 21.
+- Cada card permanece compacto, com apenas 10 posições de jogadores.
+- O número da posição continua sendo o número da camisa.

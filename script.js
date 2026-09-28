@@ -42,9 +42,9 @@ units.forEach(unit => {
 
 
 /* =========================================================
-   TIMES DAS DEZENAS - FUTEBOL
-   Cada dezena tem 10 casas numeradas de 1 a 10.
-   O jogador recebe a camisa da posição ocupada.
+   TIMES DAS DEZENAS - FUTEBOL COMPACTO
+   O nome do time representa o valor-base da dezena.
+   Ex.: Time 20 vazio = 20; + 1 jogador = 21.
    ========================================================= */
 
 const playerBench = document.querySelector("#playerBench");
@@ -56,14 +56,15 @@ let draggedPlayer = null;
 
 const teamStates = {};
 
-function createEmptyTeam(value) {
-  // Cada posição começa ocupada ciclicamente pelos personagens.
-  return Array.from({ length: value }, (_, i) => i % units.length);
+function createEmptyTeam() {
+  // Dez posições para os jogadores/unidades.
+  // Começa vazio: o próprio time já representa sua dezena-base.
+  return Array.from({ length: 10 }, () => null);
 }
 
 function getTeamState(value) {
   if (!teamStates[value]) {
-    teamStates[value] = createEmptyTeam(value);
+    teamStates[value] = createEmptyTeam();
   }
   return teamStates[value];
 }
@@ -113,28 +114,31 @@ clearPlayerSelection.addEventListener("click", () => {
 
 function getTeamCounts(value) {
   const state = getTeamState(value);
-  const unitsCount = state.filter(player => player !== null).length;
+  const extraUnits = state.filter(player => player !== null).length;
+  const total = value + extraUnits;
 
   return {
-    unitsCount,
-    fullTens: Math.floor(unitsCount / 10),
-    looseUnits: unitsCount % 10
+    extraUnits,
+    total,
+    fullTens: Math.floor(total / 10),
+    looseUnits: total % 10
   };
 }
 
-function teamExplanation(unitsCount, fullTens, looseUnits) {
-  const dezenaWord = fullTens === 1 ? "dezena completa" : "dezenas completas";
-  const unidadeWord = looseUnits === 1 ? "unidade" : "unidades";
+function teamExplanation(value, extraUnits, total, fullTens, looseUnits) {
+  const unitWord = extraUnits === 1 ? "unidade" : "unidades";
+  const dezenaWord = fullTens === 1 ? "dezena" : "dezenas";
+  const looseWord = looseUnits === 1 ? "unidade" : "unidades";
 
-  if (looseUnits === 0) {
-    return `${unitsCount} unidades = ${fullTens} ${dezenaWord}.`;
+  if (extraUnits === 0) {
+    return `${value} já representa ${value / 10} ${value === 10 ? "dezena" : "dezenas"}.`;
   }
 
-  return `${unitsCount} unidades = ${fullTens} ${dezenaWord} + ${looseUnits} ${unidadeWord}.`;
+  return `${value} + ${extraUnits} ${unitWord} = ${total}. Isso forma ${fullTens} ${dezenaWord} e ${looseUnits} ${looseWord}.`;
 }
 
 function shirtNumberForSlot(index) {
-  return (index % 10) + 1;
+  return index + 1;
 }
 
 function slotMarkup(value, index, playerIndex, color) {
@@ -182,61 +186,60 @@ function slotMarkup(value, index, playerIndex, color) {
 function renderTeamCard(value) {
   const d = value / 10;
   const state = getTeamState(value);
-  const { unitsCount, fullTens, looseUnits } = getTeamCounts(value);
+  const { extraUnits, total, fullTens, looseUnits } = getTeamCounts(value);
   const color = teamColors[d - 1];
 
   const card = document.createElement("article");
   card.className = "ten-card interactive-team";
   card.dataset.teamValue = value;
 
-  const groupsMarkup = Array.from({ length: d }, (_, groupIndex) => {
-    const slots = Array.from({ length: 10 }, (_, slotInGroup) => {
-      const index = groupIndex * 10 + slotInGroup;
-      return slotMarkup(value, index, state[index], color);
-    }).join("");
-
-    return `
-      <div class="ten-group" data-group-label="${groupIndex + 1}ª dezena">
-        ${slots}
-      </div>
-    `;
+  const slots = Array.from({ length: 10 }, (_, index) => {
+    return slotMarkup(value, index, state[index], color);
   }).join("");
 
   card.innerHTML = `
     <div class="ten-header" style="background:${color}">
       <span>Time do ${value}</span>
-      <strong>${value}</strong>
+      <strong>${total}</strong>
     </div>
 
     <div class="team-body">
+      <div class="base-ten-badge">
+        <strong>Valor-base do time</strong>
+        <span>${value}</span>
+      </div>
+
       <p class="team-instruction">
-        Cada dezena tem posições de 1 a 10. O número da casa vira o número da camisa.
+        O Time ${value} já vale ${value}. Cada jogador colocado acrescenta 1 unidade.
       </p>
 
       <div class="team-groups">
-        ${groupsMarkup}
+        <div class="ten-group" data-group-label="Unidades">
+          ${slots}
+        </div>
       </div>
 
       <div class="team-summary">
         <div class="team-summary-main">
-          <strong>Jogadores em campo</strong>
-          <span class="team-summary-number">${unitsCount}</span>
+          <strong>Unidades adicionadas</strong>
+          <span class="team-summary-number">+${extraUnits}</span>
+        </div>
+
+        <div class="team-equation">
+          ${value} + ${extraUnits} = <span class="equation-total">${total}</span>
         </div>
 
         <div class="team-summary-explain">
-          ${teamExplanation(unitsCount, fullTens, looseUnits)}
+          ${teamExplanation(value, extraUnits, total, fullTens, looseUnits)}
         </div>
 
         <div class="team-progress" aria-hidden="true">
-          <span style="width:${value ? (unitsCount / value) * 100 : 0}%; background:${color}"></span>
+          <span style="width:${(extraUnits / 10) * 100}%; background:${color}"></span>
         </div>
 
         <div class="team-actions">
-          <button type="button" class="team-action-btn" data-team-action="fill" data-team="${value}">
-            Completar time
-          </button>
           <button type="button" class="team-action-btn" data-team-action="clear" data-team="${value}">
-            Esvaziar time
+            Tirar jogadores
           </button>
         </div>
       </div>
@@ -266,11 +269,8 @@ function updateTeamCard(value) {
 function placePlayer(teamValue, slotIndex, playerIndex, origin = null) {
   const targetState = getTeamState(teamValue);
 
-  // Se veio de outra casa, remove da origem primeiro.
   if (origin && origin.fromTeam !== null && origin.fromSlot !== null) {
     const originState = getTeamState(origin.fromTeam);
-
-    // Troca de posições quando o destino já está ocupado.
     const displaced = targetState[slotIndex];
 
     if (origin.fromTeam === teamValue) {
@@ -292,8 +292,11 @@ function placePlayer(teamValue, slotIndex, playerIndex, origin = null) {
 
   const player = units[playerIndex];
   const shirt = shirtNumberForSlot(slotIndex);
+  const { total } = getTeamCounts(teamValue);
 
-  showToast(`${player.emoji} ${player.name} entrou na posição ${shirt} e recebeu a camisa ${shirt}!`);
+  showToast(
+    `${player.emoji} ${player.name} recebeu a camisa ${shirt}. O Time ${teamValue} agora vale ${total}!`
+  );
 }
 
 function removePlayer(teamValue, slotIndex) {
@@ -306,7 +309,11 @@ function removePlayer(teamValue, slotIndex) {
   state[slotIndex] = null;
   updateTeamCard(teamValue);
 
-  showToast(`${player.emoji} ${player.name} saiu. A casa ${shirtNumberForSlot(slotIndex)} ficou vazia.`);
+  const { total } = getTeamCounts(teamValue);
+
+  showToast(
+    `${player.emoji} ${player.name} saiu. O Time ${teamValue} agora vale ${total}.`
+  );
 }
 
 function bindDragEvents(root = tensGrid) {
@@ -376,7 +383,6 @@ tensGrid.addEventListener("click", event => {
     const index = Number(slot.dataset.slot);
     const state = getTeamState(value);
 
-    // Em celular/tablet: jogador selecionado vai para a casa tocada.
     if (selectedPlayerIndex !== null) {
       placePlayer(value, index, selectedPlayerIndex);
       selectedPlayerIndex = null;
@@ -385,11 +391,12 @@ tensGrid.addEventListener("click", event => {
       return;
     }
 
-    // Sem seleção, tocar num jogador remove-o.
     if (state[index] !== null) {
       removePlayer(value, index);
     } else {
-      showToast(`A casa ${shirtNumberForSlot(index)} está vazia. Escolha um personagem no banco.`);
+      showToast(
+        `A casa ${shirtNumberForSlot(index)} está vazia. Escolha um personagem no banco.`
+      );
     }
 
     return;
@@ -399,23 +406,16 @@ tensGrid.addEventListener("click", event => {
 
   if (actionButton) {
     const value = Number(actionButton.dataset.team);
-    const action = actionButton.dataset.teamAction;
     const state = getTeamState(value);
 
-    if (action === "fill") {
-      for (let i = 0; i < state.length; i++) {
-        state[i] = i % units.length;
-      }
-    } else {
-      for (let i = 0; i < state.length; i++) {
-        state[i] = null;
-      }
+    for (let i = 0; i < state.length; i++) {
+      state[i] = null;
     }
 
     updateTeamCard(value);
 
-    const { unitsCount, fullTens, looseUnits } = getTeamCounts(value);
-    showToast(teamExplanation(unitsCount, fullTens, looseUnits));
+    const { extraUnits, total, fullTens, looseUnits } = getTeamCounts(value);
+    showToast(teamExplanation(value, extraUnits, total, fullTens, looseUnits));
   }
 });
 
