@@ -1,0 +1,23 @@
+# Turma dos Números
+
+Protótipo educativo para ensinar unidades e dezenas de forma lúdica.
+
+## Arquivos
+- `index.html`
+- `style.css`
+- `script.js`
+
+## Como usar
+Abra o arquivo `index.html` em qualquer navegador moderno.
+
+## O que a página possui
+- Personagens para representar as unidades de 1 a 9.
+- Times para representar as dezenas de 10 a 90.
+- Montador interativo de números.
+- Representação visual de dezenas e unidades.
+- Quiz automático para praticar.
+
+## Reações do desafio
+- Ao acertar: som de comemoração, balão animado estourando e chuva de confetes.
+- Ao errar: efeito sonoro "nhé nhé nhé", fala opcional do navegador e carinha chorando.
+- Os sons são produzidos pelo próprio navegador, sem arquivos de áudio externos.

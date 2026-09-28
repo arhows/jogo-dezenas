@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turma dos Números — Unidades e Dezenas</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <span class="badge">Aprender brincando</span>
+      <h1>Turma dos Números</h1>
+      <p>
+        Conheça os personagens das unidades, descubra os times das dezenas
+        e monte números juntando dezenas e unidades.
+      </p>
+    </div>
+    <div class="hero-number">10</div>
+  </header>
+
+  <main class="container">
+    <section class="intro-card">
+      <div class="intro-icon">💡</div>
+      <div>
+        <h2>Como funciona?</h2>
+        <p>
+          Cada personagem representa <strong>1 unidade</strong>.
+          Quando juntamos <strong>10 unidades</strong>, formamos
+          <strong>1 dezena</strong>.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <div>
+          <span class="eyebrow">Primeiro passo</span>
+          <h2>Conheça as unidades</h2>
+        </div>
+        <p>Clique em um personagem para ouvir a explicação.</p>
+      </div>
+
+      <div id="unitsGrid" class="units-grid"></div>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <div>
+          <span class="eyebrow">Agora em equipe</span>
+          <h2>Os times das dezenas</h2>
+        </div>
+        <p>Cada time representa um grupo completo de dez.</p>
+      </div>
+
+      <div id="tensGrid" class="tens-grid"></div>
+    </section>
+
+    <section class="builder-section">
+      <div class="section-title light">
+        <div>
+          <span class="eyebrow">Desafio</span>
+          <h2>Monte um número</h2>
+        </div>
+        <p>Escolha quantas dezenas e quantas unidades.</p>
+      </div>
+
+      <div class="builder">
+        <div class="controls">
+          <div class="control-card">
+            <span class="control-label">Dezenas</span>
+            <div class="stepper">
+              <button data-action="ten-minus" aria-label="Diminuir dezena">−</button>
+              <strong id="tensValue">2</strong>
+              <button data-action="ten-plus" aria-label="Aumentar dezena">+</button>
+            </div>
+          </div>
+
+          <div class="plus-sign">+</div>
+
+          <div class="control-card">
+            <span class="control-label">Unidades</span>
+            <div class="stepper">
+              <button data-action="unit-minus" aria-label="Diminuir unidade">−</button>
+              <strong id="unitsValue">3</strong>
+              <button data-action="unit-plus" aria-label="Aumentar unidade">+</button>
+            </div>
+          </div>
+
+          <div class="equals-sign">=</div>
+
+          <div class="result-card">
+            <span>Resultado</span>
+            <strong id="resultNumber">23</strong>
+          </div>
+        </div>
+
+        <div class="visual-result">
+          <div>
+            <h3>Dezenas</h3>
+            <div id="visualTens" class="visual-tens"></div>
+          </div>
+          <div>
+            <h3>Unidades</h3>
+            <div id="visualUnits" class="visual-units"></div>
+          </div>
+        </div>
+
+        <p id="resultSentence" class="result-sentence">
+          23 é formado por 2 dezenas e 3 unidades.
+        </p>
+      </div>
+    </section>
+
+    <section class="quiz-section">
+      <div class="section-title">
+        <div>
+          <span class="eyebrow">Vamos praticar?</span>
+          <h2>Qual é o número?</h2>
+        </div>
+      </div>
+
+      <div class="quiz-card">
+        <div id="quizVisual" class="quiz-visual"></div>
+        <p id="quizQuestion">Observe os grupos e escolha a resposta correta.</p>
+        <div id="quizOptions" class="quiz-options"></div>
+        <div id="quizFeedback" class="quiz-feedback" aria-live="polite"></div>
+        <button id="nextQuestion" class="next-btn">Próximo desafio</button>
+      </div>
+    </section>
+  </main>
+
+  
+  <div id="celebrationLayer" class="celebration-layer" aria-hidden="true">
+    <div id="balloon" class="celebration-balloon">
+      <span class="balloon-shine"></span>
+      <span class="balloon-knot"></span>
+      <span class="balloon-string"></span>
+    </div>
+    <div id="confettiContainer" class="confetti-container"></div>
+  </div>
+
+  <div id="sadReaction" class="sad-reaction" aria-hidden="true">
+    <div class="sad-face">😭</div>
+    <div class="sad-text">Nhé... nhé... nhé...</div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+
+  <script src="script.js"></script>
+</body>
+</html>
